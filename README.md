@@ -70,13 +70,14 @@ Commands
 
 All variables are **required**.
 
-| Key | Description |
-| --- | --- |
-| `botToken` | Telegram bot token |
-| `adminUserId` | Admin Telegram user id (numeric) |
-| `botMaxPhotoWidth` | Max width for picked variant (e.g. `1280`) |
-| `botMaxPhotoBytes` | Max file size for picked variant (e.g. `1000000`) |
-| `botDbPath` | SQLite database path (e.g. `/data/images.db`) |
-| `botAnalyzerBase` | Analyzer base URL |
-| `botAnalyzerLinkName` | Label shown for clickable link (e.g. `wordleAnalizer`) |
-| `logLevel` | `DEBUG` / `INFO` / `WARNING` / `ERROR` / `CRITICAL` |
+| Key | Description                                             |
+| --- |---------------------------------------------------------|
+| `botToken` | Telegram bot token                                      |
+| `adminUserId` | Admin Telegram user id (numeric)                        |
+| `allowedUserArray` | array of user ids that are allowed  (e.g. [132,321,12]) |
+| `botMaxPhotoWidth` | Max width for picked variant (e.g. `1280`)              |
+| `botMaxPhotoBytes` | Max file size for picked variant (e.g. `1000000`)       |
+| `botDbPath` | SQLite database path (e.g. `/data/images.db`)           |
+| `botAnalyzerBase` | Analyzer base URL                                       |
+| `botAnalyzerLinkName` | Label shown for clickable link (e.g. `wordleAnalizer`)  |
+| `logLevel` | `DEBUG` / `INFO` / `WARNING` / `ERROR` / `CRITICAL`     |
