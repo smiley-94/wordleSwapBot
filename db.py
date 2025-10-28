@@ -60,12 +60,13 @@ SELECT file_id,
        COALESCE(NULLIF(username, ''), 'someone') AS author_display,
        link,
        user_username,
-       user_full_name
+       user_full_name,
+       created_at
 FROM images
 WHERE user_id <> ?
-  AND created_at >= ?
-  AND created_at < ?
-ORDER BY created_at ASC;
+    AND created_at >= ?
+    AND created_at < ?
+ORDER BY created_at ASC; \
 """
 
 SELECT_TODAY_RECIPIENTS_SQL = """
@@ -152,15 +153,15 @@ def saveImageSync(userId: int, chatId: int, displayName: str, fileId: str, dayKe
     finally:
         conn.close()
 
-def getOtherImagesTodaySync(excludeUserId: int, startIso: str, endIso: str, limit: int = 10) -> list[tuple[str, str, str | None, str | None, str | None]]:
+def getOtherImagesTodaySync(excludeUserId: int, startIso: str, endIso: str, limit: int = 10) -> list[tuple[str, str, str | None, str | None, str | None, str]]:
     conn = openConn()
     try:
         cur = conn.execute(SELECT_OTHERS_TODAY_SQL, (excludeUserId, startIso, endIso))
         rows = cur.fetchall()
         out = []
         for r in rows[:limit]:
-            file_id, author_display, link, uusername, ufullname = r
-            out.append((file_id, author_display, link, uusername, ufullname))
+            file_id, author_display, link, uusername, ufullname, created_at = r
+            out.append((file_id, author_display, link, uusername, ufullname, created_at))
         return out
     finally:
         conn.close()

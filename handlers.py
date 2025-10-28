@@ -41,7 +41,7 @@ def isAdmin(userId: int) -> bool:
     if ADMIN_USER_ID is None:
         return False
     try:
-        return int(ADMIN_USER_ID) == int(userId)
+        return ADMIN_USER_ID == int(userId)
     except Exception:
         return False
 
@@ -122,14 +122,16 @@ def buildWordleAnalyzerLink(words: list[str], hm: int) -> str:
     return base.rstrip("/") + "/?" + urlencode(params)
 
 
-def captionHtml(authorName: str | None, authorUsername: str | None, link: str | None) -> tuple[str, ParseMode]:
+def captionHtml(authorName: str | None, authorUsername: str | None, link: str | None, timeRome: str | None = None) -> tuple[str, ParseMode]:
     """
-    Line 1: "Full Name @username" (only present parts; fallback 'someone')
+    Line 1: "[HH:mm] Full Name @username" (only present parts; fallback 'someone')
     Line 2: clickable analyzer label (only if link is provided)
     """
     name = (authorName or "").strip()
     handle = ("@" + authorUsername.strip()) if authorUsername else ""
     first_line = " ".join(part for part in [name, handle] if part).strip() or "someone"
+    if timeRome:
+        first_line = f"[{timeRome}] {first_line}"
 
     if link:
         safe = html.escape(link, quote=True)
@@ -301,7 +303,7 @@ async def receivePhoto(update: Update, context: ContextTypes.DEFAULT_TYPE):
             linkForThis,
             userUsername or None,
             userFullName or None,
-        )
+            )
     except IntegrityError:
         await msg.reply_text(tr(lang, "already_uploaded"))
         return
@@ -319,10 +321,19 @@ async def receivePhoto(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # 2) Then send earlier photos (today) back to the uploader
     others = await db.getOtherImagesToday(user.id, startIso, endIso, limit=10)
     if others:
-        for fid, authorDisplay, otherLink, otherUname, otherFull in others:
+        for fid, authorDisplay, otherLink, otherUname, otherFull in [(o[0], o[1], o[2], o[3], o[4]) for o in others]:
+            pass  # placeholder to preserve context
+    # Re-fetch with created_at unpack, and send with time
+    if others:
+        from datetime import datetime, timezone
+        from zoneinfo import ZoneInfo
+        ROME = ZoneInfo("Europe/Rome")
+        for fid, authorDisplay, otherLink, otherUname, otherFull, createdAtIso in others:
             try:
+                dt = datetime.fromisoformat(createdAtIso.replace("Z", "+00:00")).astimezone(ROME)
+                hhmm = dt.strftime("%H:%M")
                 authorName = (otherFull or authorDisplay or "").strip()
-                capHtml, pMode = captionHtml(authorName, otherUname, otherLink)
+                capHtml, pMode = captionHtml(authorName, otherUname, otherLink, timeRome=hhmm)
                 await msg.reply_photo(fid, caption=capHtml, parse_mode=pMode)
             except (Forbidden, BadRequest, TimedOut, NetworkError):
                 # Ignore delivery errors to individual messages
@@ -334,9 +345,14 @@ async def receivePhoto(update: Update, context: ContextTypes.DEFAULT_TYPE):
     recipientChatIds = await db.getRecipientChatsToday(user.id, startIso, endIso)
     uniqueChats: Set[int] = set(recipientChatIds)
     authorNameForUploader = (userFullName or dname or "").strip()
+    from datetime import datetime, timezone
+    from zoneinfo import ZoneInfo
+    ROME = ZoneInfo("Europe/Rome")
+    nowRome = datetime.now(timezone.utc).astimezone(ROME)
+    now_hhmm = nowRome.strftime("%H:%M")
     for rcid in uniqueChats:
         try:
-            capHtml, pMode = captionHtml(authorNameForUploader, userUsername, linkForThis)
+            capHtml, pMode = captionHtml(authorNameForUploader, userUsername, linkForThis, timeRome=now_hhmm)
             await context.bot.send_photo(chat_id=rcid, photo=fileId, caption=capHtml, parse_mode=pMode)
             await asyncio.sleep(0.05)  # gentle pacing
         except (Forbidden, BadRequest, TimedOut, NetworkError):
