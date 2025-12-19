@@ -97,6 +97,17 @@ LEFT JOIN images i
 ORDER BY au.user_id;
 """
 
+SELECT_ALL_USER_CHATS_SQL = """
+WITH latest_chat AS (
+    SELECT user_id, chat_id, MAX(created_at) AS max_created
+    FROM images
+    GROUP BY user_id
+)
+SELECT DISTINCT lc.chat_id
+FROM latest_chat lc
+INNER JOIN allowed_users au ON au.user_id = lc.user_id;
+"""
+
 DELETE_ALL_SQL = "DELETE FROM images; VACUUM;"
 
 
@@ -203,6 +214,15 @@ def getRecipientChatsTodaySync(excludeUserId: int, startIso: str, endIso: str) -
         conn.close()
 
 
+def getAllUserChatIdsSync() -> list[int]:
+    conn = openConn()
+    try:
+        cur = conn.execute(SELECT_ALL_USER_CHATS_SQL)
+        return [r[0] for r in cur.fetchall() if r[0] is not None]
+    finally:
+        conn.close()
+
+
 def resetDbSync():
     conn = openConn()
     try:
@@ -298,6 +318,10 @@ async def getOtherImagesToday(excludeUserId: int, startIso: str, endIso: str, li
 
 async def getRecipientChatsToday(excludeUserId: int, startIso: str, endIso: str):
     return await asyncio.to_thread(getRecipientChatsTodaySync, excludeUserId, startIso, endIso)
+
+
+async def getAllUserChatIds() -> list[int]:
+    return await asyncio.to_thread(getAllUserChatIdsSync)
 
 
 async def resetDb():

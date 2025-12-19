@@ -1,10 +1,10 @@
 {
   "en": {
-    "welcome": "Hi! Welcome to the Wordle Players Bot 👋\n\nTo use it, send me a screenshot of your attempts from your game, and I’ll reply with the photos uploaded by other users today!\n\nUsage rules:\n• Each user can send only one photo per day.  \n• You’ll receive other players’ photos only after you’ve uploaded yours.  \n• If you add your guesses in the caption/description of your photo, you’ll get a link to the Wordle Analyzer for your game. You can see: which words you used, which ones you could have used, and how many were still available at the end of each attempt.  \n• If you play in Hard Mode, write your guesses in UPPERCASE (even a single letter is enough) so the analysis will be more accurate and take the game mode into account.  \n• When someone uploads a new photo with their guesses, anyone who has already uploaded their photo will be able to see the new one and view their own analysis.",
+    "welcome": "Hi! Welcome to the Wordle Players Bot 👋\n\nTo use it, send me a screenshot of your attempts from your game, and I'll reply with the photos uploaded by other users today!\n\nUsage rules:\n• Each user can send only one photo per day.  \n• You'll receive other players' photos only after you've uploaded yours.  \n• If you add your guesses in the caption/description of your photo, you'll get a link to the Wordle Analyzer for your game. You can see: which words you used, which ones you could have used, and how many were still available at the end of each attempt.  \n• If you play in Hard Mode, write your guesses in UPPERCASE (even a single letter is enough) so the analysis will be more accurate and take the game mode into account.  \n• When someone uploads a new photo with their guesses, anyone who has already uploaded their photo will be able to see the new one and view their own analysis.",
     "help_user": "Commands:\n/start – welcome\n/help – this help\n/id – show your id\n/author – credits",
-    "help_admin": "Commands:\n/start – welcome\n/help – this help\n/id – show your id\n/author – credits\n\nAdmin:\n/allowed – list allowed users\n/allow <user_id> – allow\n/deny <user_id> – remove\n/resetdb – wipe DB",
-    "not_authorized": "Sorry, you’re not allowed to use this bot. Ask for permission to the admin, telling them your id is: {uid}",
-    "already_uploaded": "You’ve already uploaded your daily image. Try again tomorrow! 🌞",
+    "help_admin": "Commands:\n/start – welcome\n/help – this help\n/id – show your id\n/author – credits\n\nAdmin:\n/allowed – list allowed users\n/allow <user_id> – allow\n/deny <user_id> – remove\n/resetdb – wipe DB\n/broadcast <message> – broadcast message",
+    "not_authorized": "Sorry, you're not allowed to use this bot. Ask for permission to the admin, telling them your id is: {uid}",
+    "already_uploaded": "You've already uploaded your daily image. Try again tomorrow! 🌞",
     "no_photo_found": "Hmm, I couldn't find the photo data. Try again?",
     "saved_no_others": "Saved! No other user photos yet today.",
     "by_author": "by {author}",
@@ -18,12 +18,15 @@
     "deny_missing": "User {uid} was not in the list.",
     "bad_args": "Please provide a numeric user id, e.g. /allow 123456789",
     "your_user_id": "Your id is: {uid}",
-    "created_by": "Created by <a href='https://github.com/smiley-94'>Smiley</a>"
+    "created_by": "Created by <a href='https://github.com/smiley-94'>Smiley</a>",
+    "broadcast_no_message": "Usage: /broadcast <message>",
+    "broadcast_no_users": "No users to broadcast to.",
+    "broadcast_done": "Broadcast sent to {success} users. Failed: {failed}."
   },
   "it": {
     "welcome": "Ciao! Benvenuto nel Bot dedicato ai giocatori di Wordle👋\n\nPer utilizzarlo inviami lo screenshot dei tentativi della tua partita e ti risponderò con le foto caricate dagli altri utenti oggi !\n\nRegole di utilizzo:\n• Ogni utente puó inviare una sola foto al giorno.\n• Ricevi le foto degli altri giocatori solo dopo aver caricato la tua.\n•Se aggiungi nella descrizione della tua foto i tentativi che hai fatto, otterrai un link che ti riporta al Wordle Analizer della tua partita. Puoi ottenere informazioni: sulle parole che hai usato, su quelle che potevi usare e  su quante potevi ancora usarne al termine di ogni tentativo.\n•Se giochi in Hard Mode scrivi i tuoi tentativi in maiuscolo (è sufficiente anche solo una lettera) in questo modo le analisi saranno più precise e terranno conto della modalità di gioco usata.\n• Quando qualcuno carica una nuova foto con i suoi tentativi, chi ha già caricato la foto potrà vedere quella nuova e potrà consultare la sua analisi.",
     "help_user": "Comandi:\n/start – benvenuto\n/help – questo aiuto\n/id – mostra il tuo id\n/author – crediti",
-    "help_admin": "Comandi:\n/start – benvenuto\n/help – questo aiuto\n/id – mostra il tuo id\n/author – crediti\n\nAdmin:\n/allowed – elenco utenti autorizzati\n/allow <user_id> – autorizza\n/deny <user_id> – rimuovi\n/resetdb – svuota DB",
+    "help_admin": "Comandi:\n/start – benvenuto\n/help – questo aiuto\n/id – mostra il tuo id\n/author – crediti\n\nAdmin:\n/allowed – elenco utenti autorizzati\n/allow <user_id> – autorizza\n/deny <user_id> – rimuovi\n/resetdb – svuota DB\n/broadcast <messaggio> – invia messaggio",
     "not_authorized": "Spiacente, non sei autorizzato a usare questo bot. Chiedi il permesso all'admin, comunicando il tuo id: {uid}",
     "already_uploaded": "Hai già caricato la tua foto di oggi. Riprova domani! 🌞",
     "no_photo_found": "Non trovo i dati della foto. Riprova?",
@@ -39,6 +42,9 @@
     "deny_missing": "L'utente {uid} non è nell'elenco.",
     "bad_args": "Inserisci un user id numerico, es. /allow 123456789",
     "your_user_id": "Il tuo id è: {uid}",
-    "created_by": "Creato da <a href='https://github.com/smiley-94'>Smiley</a>"
+    "created_by": "Creato da <a href='https://github.com/smiley-94'>Smiley</a>",
+    "broadcast_no_message": "Uso: /broadcast <messaggio>",
+    "broadcast_no_users": "Nessun utente a cui inviare.",
+    "broadcast_done": "Broadcast inviato a {success} utenti. Falliti: {failed}."
   }
 }

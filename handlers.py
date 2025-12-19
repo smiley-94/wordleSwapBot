@@ -242,6 +242,47 @@ async def denyCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(tr(lang, "deny_missing", uid=uid))
 
 
+async def broadcastCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    lang = userLang(update)
+    user = update.effective_user
+
+    if not user or not isAdmin(user.id):
+        await update.message.reply_text(tr(lang, "not_authorized", uid=user.id if user else "?"))
+        return
+
+    if not context.args:
+        await update.message.reply_text(tr(lang, "broadcast_no_message"))
+        return
+
+    message = " ".join(context.args)
+
+    chatIds = await db.getAllUserChatIds()
+
+    if not chatIds:
+        await update.message.reply_text(tr(lang, "broadcast_no_users"))
+        return
+
+    successCount = 0
+    failCount = 0
+
+    for chatId in chatIds:
+        try:
+            await context.bot.send_message(
+                chat_id=chatId,
+                text=message,
+                parse_mode=ParseMode.HTML,
+                disable_notification=True
+            )
+            successCount += 1
+            await asyncio.sleep(0.05)
+        except (Forbidden, BadRequest, TimedOut, NetworkError):
+            failCount += 1
+
+    await update.message.reply_text(
+        tr(lang, "broadcast_done", success=successCount, failed=failCount)
+    )
+
+
 def determine_hm(caption: str) -> int:
     letters = [c for c in caption if c.isalpha()]
     if not letters:
@@ -373,5 +414,6 @@ def registerHandlers(app: Application, adminUserId: int | None):
     app.add_handler(CommandHandler("allowed", allowedCmd))
     app.add_handler(CommandHandler("allow", allowCmd))
     app.add_handler(CommandHandler("deny", denyCmd))
+    app.add_handler(CommandHandler("broadcast", broadcastCmd))
     app.add_handler(MessageHandler(filters.PHOTO & ~filters.COMMAND, receivePhoto))
     app.add_handler(MessageHandler(filters.COMMAND, helpCmd))

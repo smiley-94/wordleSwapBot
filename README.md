@@ -37,6 +37,8 @@ Features
     
     -   Everyone who already uploaded today receives the new photo (+ link and custom text if present)
 
+-   Admin broadcast: send silent messages to all allowed users
+
 -   Internationalization through `lang.json` (EN/IT included)
 
 -   Size caps for picked Telegram photo variant
@@ -56,6 +58,7 @@ Caption Format
 - `CRANE CRATE TRADE @ Difficult one!` - Hard Mode + custom message
 
 **Message format sent to users:**
+
 
 [HH:mm] Full Name @username  
 wordle analyzer link  
@@ -86,7 +89,15 @@ Commands
 
 -   `/resetdb` -- wipe the images table (whitelist is kept)
 
+-   `/broadcast <message>` -- send a silent message to all allowed users (supports HTML formatting)
+
 > Non-allowed users get a localized message with their id to share with the admin.
+
+**Broadcast Usage Example:**
+
+/broadcast 🎉 New feature: You can now add custom messages after @ in your captions!
+/broadcast <b>Maintenance notice:</b> The bot will be offline tomorrow at 10:00 AM for 30 minutes.
+
 
 * * * * *
 
