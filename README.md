@@ -15,29 +15,51 @@ Features
 
 -   Wordle analyzer link from **photo captions only** generated when the **photo caption** is valid:
 
-    -   Caption may contain **only letters and spaces**
-
+    -   Caption may contain **only letters, spaces, and @ symbol**
+    
+    -   Words **before** the `@` symbol are parsed as Wordle guesses
+    
     -   Each token must be a **5-letter** word
-
+    
     -   One or more words (max seven); **last word = solution**
-
-    -   uppercase if you play in **Hard Mode**
+    
+    -   Uppercase if you play in **Hard Mode**
+    
+    -   Text **after** the `@` symbol is sent as **custom message** (third line) to other users
     
     -   Link appears as a **clickable label**
     
 -   Fan-out:
 
-    -   Uploader receives earlier photos from today (with each photo's link if present)
-
+    -   Uploader receives earlier photos from today (with each photo's link and custom text if present)
+    
     -   If uploader's caption is valid, they also get their **own link** as a message
-
-    -   Everyone who already uploaded today receives the new photo (+ link if present)
+    
+    -   Everyone who already uploaded today receives the new photo (+ link and custom text if present)
 
 -   Internationalization through `lang.json` (EN/IT included)
 
 -   Size caps for picked Telegram photo variant
 
 -   Env-driven logging level
+
+* * * * *
+
+Caption Format
+--------------
+
+**Example captions:**
+
+- `BREAD STEAM BEACH PEACE` - Valid Wordle in Hard Mode (uppercase)
+- `bread steam beach peace` - Valid Wordle in Normal Mode (lowercase)
+- `bread steam beach peace @ Great game today!` - Wordle + custom message
+- `CRANE CRATE TRADE @ Difficult one!` - Hard Mode + custom message
+
+**Message format sent to users:**
+
+[HH:mm] Full Name @username  
+wordle analyzer link  
+Custom text here (if provided after @)  
 
 * * * * *
 
@@ -67,6 +89,9 @@ Commands
 > Non-allowed users get a localized message with their id to share with the admin.
 
 * * * * *
+
+Environment Variables
+---------------------
 
 All variables are **required**.
 

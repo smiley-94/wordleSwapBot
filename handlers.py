@@ -24,8 +24,10 @@ analyzerLinkName = os.environ["botAnalyzerLinkName"]
 
 ADMIN_USER_ID = None
 
+
 def userLang(update: Update) -> str:
     return pickLang(getattr(getattr(update, "effective_user", None), "language_code", None))
+
 
 def displayName(update: Update) -> str:
     u = update.effective_user
@@ -36,6 +38,7 @@ def displayName(update: Update) -> str:
     full = " ".join(filter(None, [u.first_name, u.last_name]))
     return full.strip() or "someone"
 
+
 def isAdmin(userId: int) -> bool:
     global ADMIN_USER_ID
     if ADMIN_USER_ID is None:
@@ -45,8 +48,11 @@ def isAdmin(userId: int) -> bool:
     except Exception:
         return False
 
+
 def chooseConstrainedPhoto(photos):
-    def area(p): return (p.width or 0) * (p.height or 0)
+    def area(p):
+        return (p.width or 0) * (p.height or 0)
+
     candidates = []
     for p in photos:
         widthOk = (maxPhotoWidth <= 0) or (p.width <= maxPhotoWidth)
@@ -57,14 +63,12 @@ def chooseConstrainedPhoto(photos):
             candidates.append(p)
     return max(candidates, key=area) if candidates else min(photos, key=area)
 
+
 LETTERS = list("abcdefghijklmnopqrstuvwxyz")
 LETTERS_MAP = {ch: i for i, ch in enumerate(LETTERS)}
 
+
 def mulberry32(seed: int):
-    """
-    Mulberry32 PRNG, ported from wordle-analyzer's TS.
-    Returns a function producing floats in [0,1).
-    """
     seed &= 0xFFFFFFFF
 
     def rand() -> float:
@@ -77,10 +81,8 @@ def mulberry32(seed: int):
 
     return rand
 
+
 def _shuffle_with(rand: callable, array: list[str]) -> list[str]:
-    """
-    Fisher–Yates using the provided RNG (signature: () -> float in [0,1)).
-    """
     arr = list(array)
     current_index = len(arr)
     while current_index:
@@ -89,31 +91,20 @@ def _shuffle_with(rand: callable, array: list[str]) -> list[str]:
         arr[current_index], arr[random_index] = arr[random_index], arr[current_index]
     return arr
 
+
 def _encode(seed: int, word: str) -> str:
-    """
-    Mirrors encode(seed, word) from wordle-analyzer:
-      - Shuffle alphabet with seeded PRNG
-      - For each letter at index i: shuffled[(lettersMap[letter] + i) % 26]
-    Precondition: 'word' must be lowercase a-z only.
-    """
     shuffled = _shuffle_with(mulberry32(seed), LETTERS)
     out = []
     for i, ch in enumerate(word):
-        idx = LETTERS_MAP[ch]  # KeyError if outside a-z, by design
+        idx = LETTERS_MAP[ch]
         out.append(shuffled[(idx + i) % len(shuffled)])
     return "".join(out)
 
+
 def buildWordleAnalyzerLink(words: list[str], hm: int) -> str:
-    """
-    Builds: https://wordle-analyzer.com/?guesses=<encoded>&seed=<seed>&hm=<0|1>
-    - 'words' are 5-letter tokens (guesses + solution), concatenated without separators.
-    - Seed is chosen in [0, 99] to mirror the TS example.
-    - 'hm' is 0 if caption is all lowercase letters, else 1.
-    """
-    plaintext = "".join(w.lower() for w in words)   # encode expects lowercase
+    plaintext = "".join(w.lower() for w in words)
     seed = random.randint(0, 99)
     encoded = _encode(seed, plaintext)
-
     params = {"guesses": encoded, "seed": str(seed), "hm": str(int(hm))}
     base = analyzerBase.strip()
     if "?" in base:
@@ -122,23 +113,31 @@ def buildWordleAnalyzerLink(words: list[str], hm: int) -> str:
     return base.rstrip("/") + "/?" + urlencode(params)
 
 
-def captionHtml(authorName: str | None, authorUsername: str | None, link: str | None, timeRome: str | None = None) -> tuple[str, ParseMode]:
-    """
-    Line 1: "[HH:mm] Full Name @username" (only present parts; fallback 'someone')
-    Line 2: clickable analyzer label (only if link is provided)
-    """
+def captionHtml(
+        authorName: str | None,
+        authorUsername: str | None,
+        link: str | None,
+        customText: str | None = None,
+        timeRome: str | None = None
+) -> tuple[str, ParseMode]:
     name = (authorName or "").strip()
     handle = ("@" + authorUsername.strip()) if authorUsername else ""
     first_line = " ".join(part for part in [name, handle] if part).strip() or "someone"
+
     if timeRome:
         first_line = f"[{timeRome}] {first_line}"
 
+    lines = [html.escape(first_line)]
+
     if link:
         safe = html.escape(link, quote=True)
-        label = html.escape(analyzerLinkName)  # e.g., "analizer"
-        return f'{html.escape(first_line)}\n<a href="{safe}">{label}</a>', ParseMode.HTML
+        label = html.escape(analyzerLinkName)
+        lines.append(f'<a href="{safe}">{label}</a>')
 
-    return html.escape(first_line), ParseMode.HTML
+    if customText:
+        lines.append(html.escape(customText))
+
+    return "\n".join(lines), ParseMode.HTML
 
 
 def formatUserLabel(fallbackDisplay: str, username: str | None, fullName: str | None) -> str:
@@ -152,9 +151,11 @@ def formatUserLabel(fallbackDisplay: str, username: str | None, fullName: str | 
         return n
     return fallbackDisplay
 
+
 async def startCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = userLang(update)
     await update.message.reply_text(tr(lang, "welcome"), parse_mode=ParseMode.MARKDOWN)
+
 
 async def helpCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = userLang(update)
@@ -164,6 +165,7 @@ async def helpCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text(tr(lang, "help_user"))
 
+
 async def idCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = userLang(update)
     user = update.effective_user
@@ -171,10 +173,12 @@ async def idCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await update.message.reply_text(tr(lang, "your_user_id", uid=user.id))
 
+
 async def authorCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = userLang(update)
-    anchor = '<a href="https://github.com/smiley-94">Smiley</a>'
+    anchor = '<a href="https://github.com/aleSuglia">Smiley</a>'
     await update.message.reply_text(tr(lang, "created_by", author=anchor), parse_mode=ParseMode.HTML)
+
 
 async def resetdbCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = userLang(update)
@@ -184,6 +188,7 @@ async def resetdbCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await db.resetDb()
     await update.message.reply_text(tr(lang, "reset_done"))
+
 
 async def allowedCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = userLang(update)
@@ -202,6 +207,7 @@ async def allowedCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         lines.append(f"{uid} – {label}")
     await update.message.reply_text(header + "\n" + "\n".join(lines))
 
+
 async def allowCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = userLang(update)
     user = update.effective_user
@@ -217,6 +223,7 @@ async def allowCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(tr(lang, "allow_ok", uid=uid))
     else:
         await update.message.reply_text(tr(lang, "allow_exists", uid=uid))
+
 
 async def denyCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = userLang(update)
@@ -234,16 +241,11 @@ async def denyCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text(tr(lang, "deny_missing", uid=uid))
 
+
 def determine_hm(caption: str) -> int:
-    """
-    hm = 0 if the caption consists only of lowercase letters (a-z) and whitespace.
-    hm = 1 otherwise (any uppercase present).
-    Non-letters are not allowed for analyzer (handled by validator); this function
-    only checks case, not token validity.
-    """
     letters = [c for c in caption if c.isalpha()]
     if not letters:
-        return 1  # no letters -> treat as 1 (won't be used if string is invalid anyway)
+        return 1
     return 0 if all(c.islower() for c in letters) else 1
 
 
@@ -252,47 +254,50 @@ async def receivePhoto(update: Update, context: ContextTypes.DEFAULT_TYPE):
     msg = update.message
     user = update.effective_user
     chat = update.effective_chat
+
     if not user or not chat or not msg:
         return
 
-    # Authorization
     if not await db.isAllowed(user.id):
         await msg.reply_text(tr(lang, "not_authorized", uid=user.id if user else "?"))
         return
 
-    # Day bounds (Europe/Rome)
     startUtc, endUtc = romeDayBoundsUtc()
     startIso = iso(startUtc)
     endIso = iso(endUtc)
     dayKey = romeDayKey()
 
-    # Validate presence of photo
     if not msg.photo:
         await msg.reply_text(tr(lang, "no_photo_found"))
         return
 
-    # Pick the best-sized photo under constraints
     best = chooseConstrainedPhoto(msg.photo)
     fileId = best.file_id
 
-    # Author fields
     u = update.effective_user
     userUsername = (u.username or "").strip() if u else ""
     userFullName = " ".join(filter(None, [u.first_name, u.last_name])).strip() if u else ""
     dname = displayName(update)
 
     linkForThis = None
+    customText = None
     cap = (msg.caption or "")
-    if cap and re.fullmatch(r"[A-Za-z\s]+", cap):
-        raw_tokens = cap.split()
+
+    if cap and re.fullmatch(r"[A-Za-z\s@]+", cap):
+        parts = cap.split('@', 1)
+        wordsPart = parts[0].strip()
+
+        if len(parts) > 1:
+            customText = parts[1].strip()
+
+        raw_tokens = wordsPart.split()
         valid_tokens = [t for t in raw_tokens if len(t) == 5 and t.isalpha()]
+
         if 1 <= len(valid_tokens) <= 7 and len(valid_tokens) == len(raw_tokens):
-            hm = determine_hm(cap) 
+            hm = determine_hm(wordsPart)
             words = [tok.lower() for tok in valid_tokens]
             linkForThis = buildWordleAnalyzerLink(words, hm)
 
-
-    # Persist (unique per user/day)
     try:
         await db.saveImage(
             user.id,
@@ -303,60 +308,59 @@ async def receivePhoto(update: Update, context: ContextTypes.DEFAULT_TYPE):
             linkForThis,
             userUsername or None,
             userFullName or None,
-            )
+            customText
+        )
     except IntegrityError:
         await msg.reply_text(tr(lang, "already_uploaded"))
         return
 
-    # 1) Send the analyzer to the uploader FIRST (if we have a link)
     if linkForThis:
         try:
             safe = html.escape(linkForThis, quote=True)
             label = html.escape(analyzerLinkName)
             await msg.reply_text(f'<a href="{safe}">{label}</a>', parse_mode=ParseMode.HTML)
         except Exception:
-            # Non-fatal: carry on to the rest of the flow
             pass
 
-    # 2) Then send earlier photos (today) back to the uploader
     others = await db.getOtherImagesToday(user.id, startIso, endIso, limit=10)
-    if others:
-        for fid, authorDisplay, otherLink, otherUname, otherFull in [(o[0], o[1], o[2], o[3], o[4]) for o in others]:
-            pass  # placeholder to preserve context
-    # Re-fetch with created_at unpack, and send with time
+
     if others:
         from datetime import datetime, timezone
         from zoneinfo import ZoneInfo
         ROME = ZoneInfo("Europe/Rome")
-        for fid, authorDisplay, otherLink, otherUname, otherFull, createdAtIso in others:
+
+        for fid, authorDisplay, otherLink, otherUname, otherFull, otherCustom, createdAtIso in others:
             try:
                 dt = datetime.fromisoformat(createdAtIso.replace("Z", "+00:00")).astimezone(ROME)
                 hhmm = dt.strftime("%H:%M")
                 authorName = (otherFull or authorDisplay or "").strip()
-                capHtml, pMode = captionHtml(authorName, otherUname, otherLink, timeRome=hhmm)
+                capHtml, pMode = captionHtml(authorName, otherUname, otherLink, otherCustom, timeRome=hhmm)
                 await msg.reply_photo(fid, caption=capHtml, parse_mode=pMode)
             except (Forbidden, BadRequest, TimedOut, NetworkError):
-                # Ignore delivery errors to individual messages
                 pass
     else:
         await msg.reply_text(tr(lang, "saved_no_others"))
 
-    # 3) Finally, broadcast the uploader's photo to other chats that already uploaded today
     recipientChatIds = await db.getRecipientChatsToday(user.id, startIso, endIso)
     uniqueChats: Set[int] = set(recipientChatIds)
+
     authorNameForUploader = (userFullName or dname or "").strip()
+
     from datetime import datetime, timezone
     from zoneinfo import ZoneInfo
     ROME = ZoneInfo("Europe/Rome")
     nowRome = datetime.now(timezone.utc).astimezone(ROME)
     now_hhmm = nowRome.strftime("%H:%M")
+
     for rcid in uniqueChats:
         try:
-            capHtml, pMode = captionHtml(authorNameForUploader, userUsername, linkForThis, timeRome=now_hhmm)
+            capHtml, pMode = captionHtml(authorNameForUploader, userUsername, linkForThis, customText,
+                                         timeRome=now_hhmm)
             await context.bot.send_photo(chat_id=rcid, photo=fileId, caption=capHtml, parse_mode=pMode)
-            await asyncio.sleep(0.05)  # gentle pacing
+            await asyncio.sleep(0.05)
         except (Forbidden, BadRequest, TimedOut, NetworkError):
             pass
+
 
 def registerHandlers(app: Application, adminUserId: int | None):
     global ADMIN_USER_ID
