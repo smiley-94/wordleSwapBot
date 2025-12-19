@@ -324,20 +324,21 @@ async def receivePhoto(update: Update, context: ContextTypes.DEFAULT_TYPE):
     customText = None
     cap = (msg.caption or "")
 
-    if cap and re.fullmatch(r"[A-Za-z\s@]+", cap):
+    if cap:
         parts = cap.split('@', 1)
         wordsPart = parts[0].strip()
 
         if len(parts) > 1:
             customText = parts[1].strip()
 
-        raw_tokens = wordsPart.split()
-        valid_tokens = [t for t in raw_tokens if len(t) == 5 and t.isalpha()]
+        if wordsPart and re.fullmatch(r"[A-Za-z\s]+", wordsPart):
+            raw_tokens = wordsPart.split()
+            valid_tokens = [t for t in raw_tokens if len(t) == 5 and t.isalpha()]
 
-        if 1 <= len(valid_tokens) <= 7 and len(valid_tokens) == len(raw_tokens):
-            hm = determine_hm(wordsPart)
-            words = [tok.lower() for tok in valid_tokens]
-            linkForThis = buildWordleAnalyzerLink(words, hm)
+            if 1 <= len(valid_tokens) <= 7 and len(valid_tokens) == len(raw_tokens):
+                hm = determine_hm(wordsPart)
+                words = [tok.lower() for tok in valid_tokens]
+                linkForThis = buildWordleAnalyzerLink(words, hm)
 
     try:
         await db.saveImage(
