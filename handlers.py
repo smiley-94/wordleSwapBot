@@ -250,11 +250,19 @@ async def broadcastCmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(tr(lang, "not_authorized", uid=user.id if user else "?"))
         return
 
-    if not context.args:
+    msg = update.message
+    if not msg or not msg.text:
         await update.message.reply_text(tr(lang, "broadcast_no_message"))
         return
 
-    message = " ".join(context.args)
+    fullText = msg.text
+    command = fullText.split(maxsplit=1)
+
+    if len(command) < 2:
+        await update.message.reply_text(tr(lang, "broadcast_no_message"))
+        return
+
+    message = command[1]
 
     chatIds = await db.getAllUserChatIds()
 
