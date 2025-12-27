@@ -117,3 +117,12 @@ All variables are **required**.
 | `botAnalyzerBase` | Analyzer base URL                                       |
 | `botAnalyzerLinkName` | Label shown for clickable link (e.g. `wordleAnalizer`)  |
 | `logLevel` | `DEBUG` / `INFO` / `WARNING` / `ERROR` / `CRITICAL`     |
+
+
+Data Volume
+---------------------
+required for persistance of the data between restarts
+
+| Path | Description                                |
+|------|--------------------------------------------|
+| `/data`  | Persistent storage for the SQLite database |

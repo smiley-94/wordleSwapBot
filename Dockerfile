@@ -1,38 +1,39 @@
 # ---------- Base builder ----------
-FROM python:3.11-slim AS builder
+FROM python:3.11-alpine AS builder
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential && \
-    rm -rf /var/lib/apt/lists/*
+# Install build dependencies for C-extensions if needed
+RUN apk add --no-cache build-base
 
 WORKDIR /app
 COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 # ---------- Runtime image ----------
-FROM python:3.11-slim
+FROM python:3.11-alpine
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    BOT_DB_PATH=/data/images.db
+    botDbPath=/data/wordleSwapBot.db \
+    PYTHONPATH=/app
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    tesseract-ocr tesseract-ocr-eng \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN useradd -m -u 10001 appuser && \
-    mkdir -p /app /data && chown -R appuser:appuser /app /data
+# Create app directory and data directory for the SQLite database
+RUN mkdir -p /app /data && \
+    addgroup -S appgroup && adduser -S appuser -G appgroup && \
+    chown -R appuser:appgroup /app /data
 
 WORKDIR /app
 
-COPY --from=builder /usr/local /usr/local
-COPY --chown=appuser:appuser . /app
+# Copy dependencies from builder
+COPY --from=builder /install /usr/local
+# Copy project files with correct ownership
+COPY --chown=appuser:appgroup . /app
+
+# The database should persist here
+VOLUME /data
 
 USER appuser
 
+# Healthcheck ensures the /data directory is writable by the appuser
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
  CMD python -c "import os,sys; sys.exit(0 if os.access('/data', os.W_OK) else 1)"
 
