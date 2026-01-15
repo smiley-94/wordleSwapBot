@@ -2,13 +2,29 @@ import os
 import sqlite3
 import asyncio
 from datetime import datetime, timezone
+from config import APP_DB_PATH
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-def _db_path() -> str:
-    path = os.environ.get("botDbPath")
-    if not path:
-        raise KeyError("botDbPath")
-    return path
+	db_dir = os.path.dirname(APP_DB_PATH) or "."
+	os.makedirs(db_dir, exist_ok=True)
+
+	# Check if we have write permissions to the directory
+	if not os.access(db_dir, os.W_OK):
+		raise PermissionError(f"No write permission to database directory: {db_dir}")
+
+	conn = sqlite3.connect(APP_DB_PATH, timeout=30, isolation_level=None)
+	conn.execute("PRAGMA journal_mode=WAL;")
+	conn.execute("PRAGMA synchronous=NORMAL;")
+	conn.execute("PRAGMA foreign_keys=ON;")
+	return conn
+
+
+def tableExists(conn: sqlite3.Connection, name: str) -> bool:
+	cur = conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=? LIMIT 1;", (name,))
+	return cur.fetchone() is not None
 
 
 CREATE_TABLE_FULL_SQL = """

@@ -1,7 +1,5 @@
-# bot.py
 #!/usr/bin/env python3
 import logging
-import os
 
 try:
     from dotenv import load_dotenv
@@ -11,35 +9,29 @@ except Exception:
 
 from telegram.ext import ApplicationBuilder, Application
 from telegram import Update
-from i18n import loadLang
 import db
 from handlers import registerHandlers
+from config import TELEGRAM_BOT_TOKEN, TELEGRAM_ADMIN_ID, TELEGRAM_ALLOWED_USERS, APP_LOG_LEVEL, APP_DB_PATH
 
-import json
-
-logLevel = getattr(logging, os.environ["logLevel"])
+# Set up logging
+logLevel = getattr(logging, APP_LOG_LEVEL)
 logging.basicConfig(level=logLevel, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
-botToken = os.environ["botToken"]
-adminUserId = os.environ["adminUserId"]
-
-allowedUsers = os.environ.get("allowedUserArray", "").strip()
-presetUsers: list[int] = json.loads(allowedUsers) if allowedUsers else []
-
 async def onStartup(app: Application):
+    from i18n import loadLang
     loadLang("lang.json")
     await db.ensureSchema()
-    for uid in presetUsers:
+    for uid in TELEGRAM_ALLOWED_USERS:
         await db.allowUser(uid)
 
 def main():
     app = (
         ApplicationBuilder()
-        .token(botToken)
+        .token(TELEGRAM_BOT_TOKEN)
         .post_init(onStartup)
         .build()
     )
-    registerHandlers(app, int(adminUserId) if adminUserId and adminUserId.isdigit() else None)
+    registerHandlers(app, TELEGRAM_ADMIN_ID)
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 if __name__ == "__main__":

@@ -17,13 +17,9 @@ import random
 from ocr import run_ocr, get_nyt_solution, preprocess_image, encode_image_b64
 import io
 from PIL import Image
+from config import IMAGE_MAX_BYTES, IMAGE_MAX_WIDTH, ANALYZER_BASE_URL, ANALYZER_LINK_LABEL
 
 logger = logging.getLogger(__name__)
-
-maxPhotoBytes = int(os.environ["botMaxPhotoBytes"])
-maxPhotoWidth = int(os.environ["botMaxPhotoWidth"])
-analyzerBase = os.environ["botAnalyzerBase"]
-analyzerLinkName = os.environ["botAnalyzerLinkName"]
 
 ADMIN_USER_ID = None
 
