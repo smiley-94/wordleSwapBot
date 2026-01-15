@@ -16,6 +16,8 @@ from ocr import run_ocr, get_nyt_solution, preprocess_image, encode_image_b64
 import io
 from PIL import Image
 from config import IMAGE_MAX_BYTES, IMAGE_MAX_WIDTH, ANALYZER_BASE_URL, ANALYZER_LINK_LABEL
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 logger = logging.getLogger(__name__)
 
@@ -378,9 +380,9 @@ async def receivePhoto(update: Update, context: ContextTypes.DEFAULT_TYPE):
 		words = run_ocr(img_b64)
 		logger.info(f"OCR extracted words for user {user.id}: {words}")
 
-		# Get today's NYT solution
-		from datetime import datetime
-		today_date = datetime.now().strftime("%Y-%m-%d")
+		# Get today's NYT solution using Rome timezone
+		ROME_TZ = ZoneInfo("Europe/Rome")
+		today_date = datetime.now(ROME_TZ).strftime("%Y-%m-%d")
 		solution = get_nyt_solution(today_date)
 		logger.info(f"NYT solution for {today_date}: {solution}")
 
@@ -432,8 +434,6 @@ async def receivePhoto(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 	if others:
 		logger.info(f"Sending {len(others)} previous images to user {user.id}")
-		from datetime import datetime, timezone
-		from zoneinfo import ZoneInfo
 		ROME = ZoneInfo("Europe/Rome")
 
 		for fid, authorDisplay, otherLink, otherUname, otherFull, otherCustom, createdAtIso in others:
@@ -455,8 +455,6 @@ async def receivePhoto(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 	authorNameForUploader = (userFullName or dname or "").strip()
 
-	from datetime import datetime, timezone
-	from zoneinfo import ZoneInfo
 	ROME = ZoneInfo("Europe/Rome")
 	nowRome = datetime.now(timezone.utc).astimezone(ROME)
 	now_hhmm = nowRome.strftime("%H:%M")

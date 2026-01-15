@@ -1,12 +1,11 @@
+import json
 import base64
 import io
-import json
-import logging
 import re
-import ollama
+import logging
 import requests
 from PIL import ImageFilter
-
+import ollama
 from config import OLLAMA_API_KEY, OLLAMA_MODEL, OLLAMA_HOST
 
 logger = logging.getLogger(__name__)
