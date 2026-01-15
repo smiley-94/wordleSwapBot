@@ -1,6 +1,4 @@
 import asyncio
-import os
-import re
 import html
 import logging
 from typing import Set
