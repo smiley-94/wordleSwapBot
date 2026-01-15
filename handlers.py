@@ -14,6 +14,9 @@ from i18n import pickLang, tr
 from util import romeDayBoundsUtc, iso, romeDayKey
 import db
 import random
+from ocr import run_ocr, get_nyt_solution, preprocess_image, encode_image_b64
+import io
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -361,8 +364,44 @@ async def receivePhoto(update: Update, context: ContextTypes.DEFAULT_TYPE):
             customText
         )
     except IntegrityError:
-        await msg.reply_text(tr(lang, "already_uploaded"))
-        return
+	# Get the photo file
+	logger.info(f"Downloading photo file_id: {fileId} from user {user.id}")
+	photo_file = await context.bot.get_file(fileId)
+
+	# Download the photo
+	photo_bytes = await photo_file.download_as_bytearray()
+	photo_stream = io.BytesIO(bytes(photo_bytes))
+
+	# Process image with OCR
+	linkForThis = None
+	try:
+		logger.info(f"Running OCR on photo from user {user.id}")
+		original_img = Image.open(photo_stream)
+		processed_img = preprocess_image(original_img)
+		img_b64 = encode_image_b64(processed_img)
+		words = run_ocr(img_b64)
+		logger.info(f"OCR extracted words for user {user.id}: {words}")
+
+		# Get today's NYT solution
+		from datetime import datetime
+		today_date = datetime.now().strftime("%Y-%m-%d")
+		solution = get_nyt_solution(today_date)
+		logger.info(f"NYT solution for {today_date}: {solution}")
+
+		# Add solution to words if it's not already there
+		if solution and solution.upper() not in words:
+			words.append(solution.upper())
+			logger.info(f"Added solution {solution} to word list for user {user.id}")
+
+		# Generate analyzer link if we have words
+		linkForThis = buildWordleAnalyzerLink(words) if words else None
+		if linkForThis:
+			logger.info(f"Generated analyzer link for user {user.id}")
+	except Exception as e:
+		logger.warning(f"OCR processing failed for user {user.id}: {e}")
+		linkForThis = None
+		words = []
+
 
     if linkForThis:
         try:
