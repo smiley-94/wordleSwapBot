@@ -1,8 +1,8 @@
-Wordle Swap Bot
+# Wordle Swap Bot
 =========================
 
 This Telegram bot is for a whitelisted group to exchange **one photo per day** (Europe/Rome).\
-If a photo **caption** contains valid Wordle guesses, the bot adds a **clickable analyzer link** to the photo and sends it to participants.
+When a user sends a Wordle screenshot, the bot automatically extracts the words using AI and adds a **clickable analyzer link** to the photo.
 
 * * * * *
 
@@ -13,31 +13,23 @@ Features
 
 -   Whitelist-only access (admin managed)
 
--   Wordle analyzer link from **photo captions only** generated when the **photo caption** is valid:
-
-    -   Caption may contain **only letters, spaces, and @ symbol**
+-   Automatic Wordle word extraction:
     
-    -   Words **before** the `@` symbol are parsed as Wordle guesses
-    
-    -   Each token must be a **5-letter** word
-    
-    -   One or more words (max seven); **last word = solution**
-    
-    -   Uppercase if you play in **Hard Mode**
-    
-    -   Text **after** the `@` symbol is sent as **custom message** (third line) to other users
-    
-    -   Link appears as a **clickable label**
+    -   Bot automatically extracts words from your Wordle screenshot using AI
+    -   Automatically fetches today's NYT Wordle solution and adds it to the analysis
+    -   Generates a Wordle Analyzer link in Hard Mode for accurate analysis
     
 -   Fan-out:
 
-    -   Uploader receives earlier photos from today (with each photo's link and custom text if present)
-    
-    -   If uploader's caption is valid, they also get their **own link** as a message
-    
-    -   Everyone who already uploaded today receives the new photo (+ link and custom text if present)
+    -   Uploader receives earlier photos from today (with each photo's link and caption if present)
+    -   If word extraction succeeds, uploader also gets their **own link** as a message
+    -   Everyone who already uploaded today receives the new photo (+ link and caption if present)
 
--   Admin broadcast: send silent messages to all allowed users
+-   Admin commands:
+
+    -   `/resetToday <user_id|ALL>` - Delete today's image(s) for specific user or all users
+    -   `/resetdb` - Wipe only images (preserves user whitelist)
+    -   `/broadcast <message>` - Send silent messages to all allowed users
 
 -   Internationalization through `lang.json` (EN/IT included)
 
@@ -50,19 +42,16 @@ Features
 Caption Format
 --------------
 
-**Example captions:**
+Add any text you want in the photo caption, it will be displayed as the third line to other users:
 
-- `BREAD STEAM BEACH PEACE` - Valid Wordle in Hard Mode (uppercase)
-- `bread steam beach peace` - Valid Wordle in Normal Mode (lowercase)
-- `bread steam beach peace @ Great game today!` - Wordle + custom message
-- `CRANE CRATE TRADE @ Difficult one!` - Hard Mode + custom message
+
 
 **Message format sent to users:**
 
 
 [HH:mm] Full Name @username  
 wordle analyzer link  
-Custom text here (if provided after @)  
+Custom text here (caption message)  
 
 * * * * *
 
@@ -87,7 +76,9 @@ Commands
 
 -   `/deny <user_id>` -- remove a user
 
--   `/resetdb` -- wipe the images table (whitelist is kept)
+-   `/resetdb` -- wipe only images (whitelist is preserved)
+
+-   `/resetToday <user_id|ALL>` -- delete today's image(s) for user or all
 
 -   `/broadcast <message>` -- send a silent message to all allowed users (supports HTML formatting)
 
@@ -95,7 +86,7 @@ Commands
 
 **Broadcast Usage Example:**
 
-/broadcast 🎉 New feature: You can now add custom messages after @ in your captions!
+/broadcast 🎉 New feature: You can now add custom messages in your captions!
 /broadcast <b>Maintenance notice:</b> The bot will be offline tomorrow at 10:00 AM for 30 minutes.
 
 
@@ -106,22 +97,25 @@ Environment Variables
 
 All variables are **required**.
 
-| Key | Description                                             |
-| --- |---------------------------------------------------------|
-| `botToken` | Telegram bot token                                      |
-| `adminUserId` | Admin Telegram user id (numeric)                        |
-| `allowedUserArray` | array of user ids that are allowed  (e.g. [132,321,12]) |
-| `botMaxPhotoWidth` | Max width for picked variant (e.g. `1280`)              |
-| `botMaxPhotoBytes` | Max file size for picked variant (e.g. `1000000`)       |
-| `botDbPath` | SQLite database path (e.g. `/data/images.db`)           |
-| `botAnalyzerBase` | Analyzer base URL                                       |
-| `botAnalyzerLinkName` | Label shown for clickable link (e.g. `wordleAnalizer`)  |
-| `logLevel` | `DEBUG` / `INFO` / `WARNING` / `ERROR` / `CRITICAL`     |
+| Key                   | Description                                                   |
+|-----------------------|---------------------------------------------------------------|
+| `botToken`            | Telegram bot token                                            |
+| `adminUserId`         | Admin Telegram user id (numeric)                              |
+| `allowedUserArray`    | array of user ids that are allowed  (e.g. [132,321,12])       |
+| `botMaxPhotoWidth`    | Max width for picked variant (e.g. `1280`)                    |
+| `botMaxPhotoBytes`    | Max file size for picked variant (e.g. `1000000`)             |
+| `botDbPath`           | SQLite database path (e.g. `/data/images.db`)                 |
+| `botAnalyzerBase`     | Analyzer base URL                                             |
+| `botAnalyzerLinkName` | Label shown for clickable link (e.g. `wordleAnalizer`)        |
+| `logLevel`            | `DEBUG` / `INFO` / `WARNING` / `ERROR` / `CRITICAL`           |
+| `ollamaApiKey`        | Ollama API key for authentication                             |
+| `ollamaModelName`     | Model name for OCR processing (default: ministral-3:8b-cloud) |
+| `ollamaHost`          | Ollama API endpoint (default: https://ollama.com)             |
 
 
 Data Volume
 ---------------------
-required for persistance of the data between restarts
+required for persistence of the data between restarts
 
 | Path | Description                                |
 |------|--------------------------------------------|
