@@ -16,7 +16,7 @@ from i18n import loadLang
 import db
 from handlers import registerHandlers
 
-logLevel = getattr(logging, os.environ["APP_LOG_LEVEL"])
+logLevel = os.environ["APP_LOG_LEVEL"]
 logging.basicConfig(
 	level=logLevel,
 	format="%(asctime)s %(levelname)s %(name)s: %(message)s"
