@@ -97,20 +97,20 @@ Environment Variables
 
 All variables are **required**.
 
-| Key                   | Description                                                   |
-|-----------------------|---------------------------------------------------------------|
-| `botToken`            | Telegram bot token                                            |
-| `adminUserId`         | Admin Telegram user id (numeric)                              |
-| `allowedUserArray`    | array of user ids that are allowed  (e.g. [132,321,12])       |
-| `botMaxPhotoWidth`    | Max width for picked variant (e.g. `1280`)                    |
-| `botMaxPhotoBytes`    | Max file size for picked variant (e.g. `1000000`)             |
-| `botDbPath`           | SQLite database path (e.g. `/data/images.db`)                 |
-| `botAnalyzerBase`     | Analyzer base URL                                             |
-| `botAnalyzerLinkName` | Label shown for clickable link (e.g. `wordleAnalizer`)        |
-| `logLevel`            | `DEBUG` / `INFO` / `WARNING` / `ERROR` / `CRITICAL`           |
-| `ollamaApiKey`        | Ollama API key for authentication                             |
-| `ollamaModelName`     | Model name for OCR processing (default: ministral-3:8b-cloud) |
-| `ollamaHost`          | Ollama API endpoint (default: https://ollama.com)             |
+| Key                      | Description                                                   |
+|--------------------------|---------------------------------------------------------------|
+| `TELEGRAM_BOT_TOKEN`     | Telegram bot token                                            |
+| `TELEGRAM_ADMIN_ID`      | Admin Telegram user id (numeric)                              |
+| `TELEGRAM_ALLOWED_USERS` | array of user ids that are allowed  (e.g. [132,321,12])       |
+| `IMAGE_MAX_WIDTH`        | Max width for picked variant (e.g. `1280`)                    |
+| `IMAGE_MAX_BYTES`        | Max file size for picked variant (e.g. `1000000`)             |
+| `APP_DB_PATH`            | SQLite database path (e.g. `/data/images.db`)                 |
+| `ANALYZER_BASE_URL`      | Analyzer base URL                                             |
+| `ANALYZER_LINK_LABEL`    | Label shown for clickable link (e.g. `wordleAnalizer`)        |
+| `APP_LOG_LEVEL`          | `DEBUG` / `INFO` / `WARNING` / `ERROR` / `CRITICAL`           |
+| `OLLAMA_API_KEY`         | Ollama API key for authentication                             |
+| `OLLAMA_MODEL`           | Model name for OCR processing (default: ministral-3:8b-cloud) |
+| `OLLAMA_HOST`            | Ollama API endpoint (default: https://ollama.com)             |
 
 
 Data Volume
