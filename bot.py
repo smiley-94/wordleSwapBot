@@ -16,7 +16,7 @@ from i18n import loadLang
 import db
 from handlers import registerHandlers
 
-logLevel = getattr(logging, os.environ["logLevel"])
+logLevel = getattr(logging, os.environ["APP_LOG_LEVEL"])
 logging.basicConfig(
 	level=logLevel,
 	format="%(asctime)s %(levelname)s %(name)s: %(message)s"
@@ -24,8 +24,8 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-botToken = os.environ["botToken"]
-adminUserId = os.environ["adminUserId"]
+botToken = os.environ["TELEGRAM_BOT_TOKEN"]
+adminUserId = os.environ["TELEGRAM_ADMIN_ID"]
 
 async def onStartup(_: Application):
 	loadLang("lang.json")
